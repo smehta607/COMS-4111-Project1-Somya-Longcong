@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<!-- <h1>User profile</h1> -->
+{% endblock %}
+
+{% block content %}
+
+<div class="jumbotron">
+  <div align='center'>
+    <h1 >Welcome to the page for {{user_info['username']}}</h1>
+    <img align='center' src="{{ profile_image }}" length="20%">
+  </div>
+</div>
+
+<form method="POST">
+  <h2>{% block title %}
+    {% if if_current_user %}
+        My
+    {% else %}
+        {{user_info['username']}}'s
+    {% endif %} Profile
+    {% endblock %}&nbsp;&nbsp;&nbsp;&nbsp;
+    {% if if_current_user %}
+    <a href="{{ url_for('userprofile.edit', user_id=user_id) }}" class="btn btn-primary active" role="button" aria-pressed="true">Edit</a>
+      {% else %}
+        {% if if_follow %}
+          <input type="submit" name="follow_button" value="Unfollow">
+        {% else %}
+          <input type="submit" name="follow_button" value="Follow">
+
+        {% endif %}
+    {% endif %}
+
+  </h2>
+
+</form>
+
+<ul class="list-group list-group-flush">
+    <li class="list-group-item">nickname : {{ user_info['nickname'] }}</li>
+    <li class="list-group-item">email : {{ user_info['email'] }}</li>
+    <li class="list-group-item">sex : {{ user_info['sex'] }}</li>
+    <li class="list-group-item">age : {{ user_info['age'] }}</li>
+    <li class="list-group-item">followers : {{ followers['followers'] }}
+    {% if if_current_user %}
+      <a href={{ url_for('userprofile.followers', user_id=user_id) }}>Details</a>
+    {% endif %}
+    </li>
+    <li class="list-group-item">following : {{ following['following'] }}
+    {% if if_current_user %}
+      <a href={{ url_for('userprofile.following', user_id=user_id) }}>Details</a>
+    {% endif %}
+    </li>
+  </ul>
+
+
+      {% if coaching_info %}
+        <h2>Coaching</h2>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">description : {{ coaching_info['description'] }}</li>
+            <li class="list-group-item">experience years : {{ coaching_info['experienceyears'] }}</li>
+            <li class="list-group-item">start date : {{ coaching_info['startdate'] }}</li>
+            <li class="list-group-item"># of events held : {{ coaching_info_more['events'] }}</li>
+            <li class="list-group-item">total participators : {{ coaching_info_more['participators'] }}</li>
+        </ul>
+
+      {% endif %}
+
+  <h2>Recent Post</h2>
+      <p>This user has {{post_total_cnt}} posts, {{likes}} likes and {{comments}} comments</p>
+      <p><a href="{{ url_for('post.user_post', user_id=user_id) }}">See all the posts</a></p>
+{% endblock %}

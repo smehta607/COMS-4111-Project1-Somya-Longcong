@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+    <body>
+        <style>
+            body{ 
+            font-size: 12pt;
+            font-family: arial;
+            }
+        </style>
+
+        <h1>{{ Name }} following</h1>
+        {% if following %}
+        <table>
+            <tr>
+                <th>User name</th>
+                <th>Email</th>
+            </tr>
+            
+            <tr>
+              <td>Alfreds Futterkiste</td>
+              <td>Maria Anders</td>
+            </tr>
+            <tr>
+              <td>Centro comercial Moctezuma</td>
+              <td>Francisco Chang</td>
+            </tr>
+          </table>
+        {% endif %}
+    </body>
+</html>
