@@ -1,0 +1,36 @@
+<!doctype html>
+
+<html>
+    <style>
+        body{ 
+        font-size: 12pt;
+        font-family: arial;
+        }
+    </style>
+
+    <head>
+        <title>Create an account!</title>
+    </head>
+
+    {%if not supress%}
+    <h1> Email already in use! Use another one or <a href="/login">login</a></h1>
+    {% endif %}
+        <body>
+            <div class="title">
+                <h1>Enter your information below</h1>
+            </div>
+            <div id="content">
+                <form method="post" action="{{ url_for('index') }}">
+                    <label for="Name">Name:</label>
+                    <input type="text" name="Name" /><br />
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" /><br />
+                    <label for="password">Password:</label>
+                    <input type="password" name="password" /><br />
+                    <input type="submit" />
+                </form>
+            </div>
+        </body>
+Back to <a href='/'>Home_page</a>
+
+</html>
