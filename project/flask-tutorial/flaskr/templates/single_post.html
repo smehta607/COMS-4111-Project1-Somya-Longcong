@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <body>
+        <style>
+            body{ 
+            font-size: 12pt;
+            font-family: arial;
+            }
+        </style>
+
+        <h1>{{name}}'s Post:</h1>
+        <h2>{{title}}</h2>
+        <div>
+            {% for n in data %}
+            <div><li>{{n}}</li></div>
+            {% endfor %}
+          </div>
+    </body>
+</html>

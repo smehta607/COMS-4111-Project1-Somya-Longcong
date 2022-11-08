@@ -162,16 +162,24 @@ def index():
   #
   return render_template("Posts.html", **context, name="Spongebob Squarepants")
 
-#
-# This is an example of a different path.  You can see it at
-# 
-#     localhost:8111/another
-#
-# notice that the functio name is another() rather than index()
-# the functions for each app.route needs to have different names
-#
+@app.route('/p') #ideally be the pid for the post
+def individual_post():
+  cursor = g.conn.execute("""select description from Belong_2_Events
+    where post_id = 200001""") #not generalized
+  desc = []
+  for result in cursor:
+    desc.append(result['description'])  # can also be accessed using result[0]
 
+  cursor = g.conn.execute("""select title from Added_Posts
+    where post_id = 200001""")
+  titles=[]
+  for result in cursor:
+    titles.append(result["title"])
+  cursor.close()
 
+  context = dict(data = desc)
+
+  return render_template("single_post.html", **context, name="Spongebob Squarepants", title=titles[0])
 if __name__ == "__main__":
   import click
 
