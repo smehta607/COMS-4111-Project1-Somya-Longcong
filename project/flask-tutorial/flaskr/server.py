@@ -17,12 +17,23 @@ Read about it online.
 
 import os
 from sqlalchemy import *
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+import flask
+import flask_login
+from flask import Flask, request, render_template, g, url_for, redirect, Response
+from flask_wtf import FlaskForm
+from flask import Flask, render_template, url_for, redirect, current_app
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import InputRequired, Length, ValidationError
+from flask_bcrypt import Bcrypt
+import sqlite3
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
-
+bcrypt = Bcrypt(app)
 
 
 # XXX: The Database URI should be in the format of: 
@@ -43,10 +54,12 @@ DB_SERVER = "w4111.cisxo09blonu.us-east-1.rds.amazonaws.com"
 
 DATABASEURI = "postgresql://"+DB_USER+":"+DB_PASSWORD+"@"+DB_SERVER+"/proj1part2"
 
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://lx2305:lx23052175@w4111.cisxo09blonu.us-east-1.rds.amazonaws.com/proj1part2"
+db = SQLAlchemy(app)
+# app.config['SECRET_KEY'] = DB_PASSWORD
 
-#
+
 # This line creates a database engine that knows how to connect to the URI above
-#
 engine = create_engine(DATABASEURI)
 
 
@@ -101,7 +114,7 @@ def teardown_request(exception):
 # see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
 # see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
 #
-@app.route('/')
+@app.route('/index')
 def index():
   """
   request is a special object that Flask provides to access web request information:
@@ -120,10 +133,10 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
+  cursor = g.conn.execute("SELECT * FROM Company")
+  companyNames = []
   for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
+    companyNames.append(result['company_name'])  # can also be accessed using result[0]
   cursor.close()
 
   #
@@ -152,7 +165,7 @@ def index():
   #     <div>{{n}}</div>
   #     {% endfor %}
   #
-  context = dict(data = names)
+  context = dict(data = companyNames)
 
   #
   # render_template looks in the templates/ folder for files.
@@ -160,34 +173,79 @@ def index():
   #
   return render_template("index.html", **context)
 
-#
+
 # This is an example of a different path.  You can see it at
-# 
+
 #     localhost:8111/another
-#
+
 # notice that the functio name is another() rather than index()
 # the functions for each app.route needs to have different names
-#
+
+
 @app.route('/another')
 def another():
   return render_template("anotherfile.html")
 
+login_manager = flask_login.LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  print(name)
-  cmd = 'INSERT INTO test(name) VALUES (:name1), (:name2)';
-  g.conn.execute(text(cmd), name1 = name, name2 = name);
-  return redirect('/')
+@login_manager.user_loader
+def user_loader(user_id):
+	return User.query.get(int(user_id))
+
+class User(db.Model,flask_login.UserMixin):
+  id = db.Column(db.String(80), primary_key=True)
+  username = db.Column(db.String(20), nullable=False, unique=True)
+  password = db.Column(db.String(80), nullable=False)
+
+class RegisterForm(FlaskForm):
+  id = StringField(validators=[
+    InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Email"})
+  username = StringField(validators=[
+    InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
+  password = PasswordField(validators=[
+    InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+
+  submit = SubmitField('Register')
+
+  def validate_username(self, username):
+      existing_user_username = User.query.filter_by(username=username.data).first()
+      if existing_user_username:
+          raise ValidationError('That username already exists. Please choose a different one.')
 
 
-@app.route('/login')
+class LoginForm(FlaskForm):
+  email = StringField(validators=[
+    InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Email"})
+
+  password = PasswordField(validators=[
+    InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+
+  submit = SubmitField('Login')
+  
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    abort(401)
-    this_is_never_executed()
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                login_user(user)
+                return redirect(url_for('profile'))
+    return render_template('login.html', form=form)
 
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def dashboard():
+    return render_template('profile.html')
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 if __name__ == "__main__":
   import click
