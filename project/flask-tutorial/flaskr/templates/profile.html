@@ -7,18 +7,23 @@
             font-family: arial;
             }
         </style>
-
-        <h1>Hello {{ Name }}!</h1>
-
-        Email: {{ Email }}
-
+        {% if message %}
+        <p style=font-size:20px>{{message}}</p>
+        {% endif %}
+        {% if name %}
+        <h3>Hello {{ name }}!</h1>
+        {% endif %}
+        {% if email %}
+        <h3>Your account email: {{ email }}</h1>
+        {% endif %}
+        
         <ul>
             <li><a href='/Follower'>Follower</a> </li>
             <li><a href='/Following'>Following</a> </li>
             <li><a href='/Posts'>Posts</a> </li>
             <li><a href='/Comments'>Comments</a> </li>
             <li><a href='/logout'>Logout</a></li>
-            <li><a href='/'>Home Page</a></li>
+            <li><a href='/index'>Home Page</a></li>
         </ul>
     </body>
 </html>

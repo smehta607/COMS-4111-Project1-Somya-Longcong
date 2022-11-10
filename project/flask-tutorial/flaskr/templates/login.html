@@ -1,0 +1,27 @@
+<!doctype html>
+
+<html>
+  <style>
+    body{ 
+      font-size: 12pt;
+      font-family: arial;
+    }
+  </style>
+
+  <body>
+    <h1>Log in your account here!</h1>
+    <form method="post">
+      <label for="email">Email</label>
+      <input name="email" id="Email" required>
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" required>
+      <input type="submit" value="Log In">
+    </form>
+    
+    <h3>Don't have an account yet?</h3>
+    <p><a href="{{url_for('register')}}"> Register here</a></p>
+    <p><a href="{{url_for('index')}}">Home_page</a></p>
+  </body>
+
+</html>
+
