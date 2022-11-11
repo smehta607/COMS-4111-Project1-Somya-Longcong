@@ -18,7 +18,7 @@ Read about it online.
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, session
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -120,12 +120,15 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("""select title from Added_Posts, Users
+  name = session['name']
+  cursor = g.conn.execute("""select title, post_id from Added_Posts, Users
     where Added_Posts.email = Users.email and
     Users.name = 'Spongebob Squarepants' """)
   titles = []
   for result in cursor:
-    titles.append(result['title'])  # can also be accessed using result[0]
+    titles.append((result['title'],result['post_id'])) 
+  print(titles) # can also be accessed using result[0]
+
   cursor.close()
 
   #
@@ -160,7 +163,7 @@ def index():
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  return render_template("Posts.html", **context, name="Spongebob Squarepants")
+  return render_template("Posts.html", **context, name=name)
 
 @app.route('/p') #ideally be the pid for the post
 def individual_post():
@@ -178,6 +181,7 @@ def individual_post():
   cursor.close()
 
   context = dict(data = desc)
+
 
   return render_template("single_post.html", **context, name="Spongebob Squarepants", title=titles[0])
 if __name__ == "__main__":

@@ -41,7 +41,7 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
-@app.route('/index')
+@app.route('/')
 def index():
   """
   request is a special object that Flask provides to access web request information:
@@ -203,6 +203,51 @@ def follow():
 def others_profile(email):
     return render_template("others_profile")
 
+@app.route('/Posts')
+def posts():
+    name = session['name']
+
+    cursor = g.conn.execute("""select title, post_id from Added_Posts, Users
+    where Added_Posts.email = Users.email and
+    Users.name = %s """, name)
+    titles = []
+    for result in cursor:
+        titles.append((result['title'],result['post_id'])) 
+
+    cursor.close()
+
+    context = dict(data = titles)
+
+    return render_template("Posts.html", **context, name=name)
+
+@app.route('/<int:post_id>')
+def individual_post(post_id):
+    print(post_id)
+    name = session['name']
+    cursor = g.conn.execute("""select title from Added_Posts
+        where post_id = %s""", post_id) 
+    titles = []
+    for result in cursor:
+        titles.append(result['title'])  # can also be accessed using result[0]
+    try:
+        desc=[]
+        cursor = g.conn.execute("""select description, timestamps from Belong_2_Events
+            where post_id = %s""", post_id)
+        for result in cursor:
+            desc.append((result["description"], result["timestamps"]))
+    except:
+        "<a>No Updates Posted Yet!</a>"
+
+    coms = []
+    cursor = g.conn.execute(""" select content from Comments_Attached 
+        where post_id = %s""", post_id)
+    for result in cursor:
+        coms.append(result['content'])
+    cursor.close()
+
+
+    context = dict(data = desc, t = titles, c=coms)
+    return render_template("single_post.html", **context, name=name)
 if __name__ == "__main__":
   import click
 
