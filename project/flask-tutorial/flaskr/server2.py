@@ -229,14 +229,12 @@ def individual_post(post_id):
     titles = []
     for result in cursor:
         titles.append(result['title'])  # can also be accessed using result[0]
-    try:
-        desc=[]
-        cursor = g.conn.execute("""select description, timestamps from Belong_2_Events
-            where post_id = %s""", post_id)
-        for result in cursor:
-            desc.append((result["description"], result["timestamps"]))
-    except:
-        "<a>No Updates Posted Yet!</a>"
+
+    desc=[]
+    cursor = g.conn.execute("""select description, timestamps from Belong_2_Events
+        where post_id = %s""", post_id)
+    for result in cursor:
+        desc.append((result["description"], result["timestamps"]))
 
     coms = []
     cursor = g.conn.execute(""" select content from Comments_Attached 

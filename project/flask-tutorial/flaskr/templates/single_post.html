@@ -12,9 +12,13 @@
         {% for m in t %}
         <h2>{{m}}</h2>
         <div>
+          {% if data[0] != null %}
             {% for n in data %}
             <div><li>{{n[1]}}: {{n[0]}}</li></div>
             {% endfor %}
+          {% else %}
+            <a>No Updates Yet!</a>
+          {% endif %}
           </div>
 
           <h3>Comments:
