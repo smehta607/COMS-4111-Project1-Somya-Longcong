@@ -4,6 +4,7 @@ from sqlalchemy import *
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.pool import NullPool
 import flask
+import flask_login
 from flask import Flask, request, render_template, g, session, url_for, redirect, Response, flash, current_app
 
 
@@ -57,11 +58,13 @@ def index():
   cursor = g.conn.execute("SELECT * FROM Company")
   companyNames = []
   for result in cursor:
-    companyNames.append(result['company_name'])  # can also be accessed using result[0]
+    companyNames.append(result['company_name'])
   cursor.close()
   context = dict(data = companyNames)
   return render_template("index.html", **context)
 
+# class User(flask_login.UserMixin):
+# 	pass
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -120,12 +123,85 @@ def profile():
         return render_template("profile.html", name=name, email = email, message="Here's your profile")
     except:
         return "<a>You have not login!</a><a href='/login'> Log in here</a>"
-    
+
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.clear()
     return "<a>Successfully Logout!</a><a href='/index'> Back to Home Page</a>"
+
+@app.route('/following', methods=['GET', 'POST'])
+def following():
+    email = session['email']
+    name = session['name']
+    email_list = []
+    cursor = g.conn.execute("select * from Followed where email_1 = %s", (email,))
+    for result in cursor:
+        email_list.append(result['email_2'])
+    cursor.close()
+    following = []
+    for emails in email_list:
+        cursor = g.conn.execute("select * from Users where email = %s", (emails,))
+        following.append(cursor.fetchone()[1])
+        cursor.close()
+    return render_template("following.html", name=name, email = email, following = following)
+
+@app.route('/follower', methods=['GET', 'POST'])
+def follower():
+    email = session['email']
+    name = session['name']
+    email_list = []
+    cursor = g.conn.execute("select * from Followed where email_2 = %s", (email,))
+    for result in cursor:
+        email_list.append(result['email_1'])
+    cursor.close()
+    follower = []
+    for emails in email_list:
+        cursor = g.conn.execute("select * from Users where email = %s", (emails,))
+        follower.append(cursor.fetchone()[1])
+        cursor.close()
+    return render_template("follower.html", name=name, email = email, follower = follower)
+
+@app.route('/follow', methods = ['GET', 'POST'])
+def follow():
+    if request.method == "POST":
+        try:
+            myEmail = session['email']
+            print("My email is " + myEmail)
+        except:
+            print("You have not login!")
+            return "<a>You have not login!</a><a href='/login'> Log in here</a>"
+        friendEmail = request.form['email']
+        print("FriendEmail is " + friendEmail)
+        if myEmail == friendEmail:
+            print("You can not follow yourself!")
+            return "<a>You can not follow yourself!</a><a href='/following'> Back to following</a>"
+        email_list = []
+        friendName = None
+        cursor = g.conn.execute("select * from Users")
+        for result in cursor:
+            if result['email'] == friendEmail:
+                friendName = result['name']
+                print(friendName)
+            email_list.append(result['email'])
+        cursor.close()
+        if friendEmail not in email_list or not friendName:
+            print("Invalid email!")
+            return "<a>Invalid email!</a><a> href='/following'> Back to following and find other one</a>"
+        else:
+            try:
+                g.conn.execute("INSERT INTO Followed (email_1, email_2) VALUES ('{0}', '{1}')".format(myEmail, friendEmail))
+                print("Successfully followed!")
+                return "<a>Successfully followed %s!</a> <a href='/following'> Back to following</a>" % (friendName)
+                g.conn.commit()
+            except:
+                return "<a> You have followed %s!</a><a href='/following'> Back to following and find other one</a>" % (friendName)
+    return "<a>Successfully followed %s!</a> % (friendName) <a href='/following'> Back to following</a>"
+
+
+@app.route('/others_profile', methods=['GET', 'POST'])
+def others_profile(email):
+    return render_template("others_profile")
 
 if __name__ == "__main__":
   import click

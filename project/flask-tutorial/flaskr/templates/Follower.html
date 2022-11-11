@@ -8,23 +8,12 @@
             }
         </style>
 
-        <h1>Users who follow {{ Name }}!</h1>
-        {% if followers %}
-        <table>
-            <tr>
-                <th>User name</th>
-                <th>Email</th>
-            </tr>
-
-            <tr>
-              <td>Alfreds Futterkiste</td>
-              <td>Maria Anders</td>
-            </tr>
-            <tr>
-              <td>Centro comercial Moctezuma</td>
-              <td>Francisco Chang</td>
-            </tr>
-          </table>
+        <h1>Users who follow {{ name }}!</h1>
+        {% if follower %}
+          {% for f in follower %}
+            <h3>{{f}}</h3>
+          {% endfor %}
         {% endif %}
+        <a href='/index'>Home Page</a></li>
     </body>
 </html>
