@@ -8,23 +8,20 @@
             }
         </style>
 
-        <h1>{{ Name }} following</h1>
+        <h1>{{ name }} following</h1>
         {% if following %}
-        <table>
-            <tr>
-                <th>User name</th>
-                <th>Email</th>
-            </tr>
-            
-            <tr>
-              <td>Alfreds Futterkiste</td>
-              <td>Maria Anders</td>
-            </tr>
-            <tr>
-              <td>Centro comercial Moctezuma</td>
-              <td>Francisco Chang</td>
-            </tr>
-          </table>
+          {% for f in following %}
+            <h3>{{f}}</h3>
+          {% endfor %}
         {% endif %}
+
+        <form method="post" action="{{ url_for('follow') }}">
+          <label for="email">Enter someone's email you want to follow</label>:
+          <input type="text" name="email" required='true'/>
+          <input type="submit" value="Follow"/>
+        </form>
+
+        <p><a href='/index'>Home Page</a></li></p>
+        <p></p><a href='/profile'>My profile</a></p>
     </body>
 </html>
