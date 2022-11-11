@@ -1,1 +1,35 @@
-This file will be aggregated to index.html file as home page
+<!doctype html>
+<html>
+    <body>
+        <style>
+            body{ 
+            font-size: 12pt;
+            font-family: arial;
+            }
+        </style>
+
+        <h1>{{ companyName }}'s Posts here, find the information you want!</h1>
+        <h4> Company id is {{company_id}}</h4>
+        <h3>Want to share something? Add your post here! </h3>
+        
+
+        <div class="title">
+            <h4>Enter your post basic information below:</h4>
+        </div>
+        <div id="content">
+            <form method="post" action="{{url_for('addpost', company_id = company_id)}}">
+                <label for="email">Your Email:</label>
+                <input type="string" name="email" /><br />
+                <label for="title">Post title:</label>
+                <input type="text" name="title" /><br />
+                <label for="job_pos">Job position:</label>
+                <input type="text" name="job_pos" /><br />
+                <label for="job_loc">Job location:</label>
+                <input type="text" name="job_loc" /><br />
+                <input type="submit" />
+            </form>
+        </div>
+        <p><a href='/index'>Home Page</a></li></p>
+        <p></p><a href='/profile'>My profile</a></p>
+    </body>
+</html>

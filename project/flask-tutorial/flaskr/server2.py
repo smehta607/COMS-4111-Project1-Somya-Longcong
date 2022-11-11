@@ -56,15 +56,14 @@ def index():
   print(request.args)
 
   cursor = g.conn.execute("SELECT * FROM Company")
-  companyNames = []
+  d = {}
   for result in cursor:
-    companyNames.append(result['company_name'])
+    d[result['company_id']]= result['company_name']
   cursor.close()
-  context = dict(data = companyNames)
-  return render_template("index.html", **context)
+  return render_template("index.html", d = d)
 
 # class User(flask_login.UserMixin):
-# 	pass
+# pass
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -76,8 +75,6 @@ def register():
         password = request.form['password']
         if not email or not name or not password:
             return "<a>Lack required information!</a><a href='/register'> Go back to registeration</a>"
-            # print("Lack required information!")
-            # return flask.redirect(flask.url_for('register'))
         try:
             g.conn.execute("INSERT INTO Users (email, name, password) \
                         VALUES ('{0}', '{1}', '{2}')".format(email, name, password))
@@ -187,7 +184,7 @@ def follow():
         cursor.close()
         if friendEmail not in email_list or not friendName:
             print("Invalid email!")
-            return "<a>Invalid email!</a><a> href='/following'> Back to following and find other one</a>"
+            return "<a>Invalid email!</a> <a href='/following'> Back to following and find other one</a>"
         else:
             try:
                 g.conn.execute("INSERT INTO Followed (email_1, email_2) VALUES ('{0}', '{1}')".format(myEmail, friendEmail))
@@ -199,9 +196,49 @@ def follow():
     return "<a>Successfully followed %s!</a> % (friendName) <a href='/following'> Back to following</a>"
 
 
-@app.route('/others_profile', methods=['GET', 'POST'])
-def others_profile(email):
-    return render_template("others_profile")
+
+@app.route('/<int:company_id>', methods=['GET', 'POST'])
+def company(company_id):
+    cursor = g.conn.execute("select company_name from Company where company_id = %s", (company_id,))
+    for result in cursor:
+        companyName = result['company_name']
+    return render_template("company.html", companyName = companyName, company_id = company_id)
+
+@app.route('/<int:company_id>/addpost', methods=['GET', 'POST'])
+def addpost(company_id):
+    if request.method == "POST":
+        email = request.form['email']
+        title = request.form['title']
+        jobPosition = request.form['job_pos']
+        jobLocation = request.form['job_loc']
+        if not email or not title or not jobPosition or not jobLocation:
+            return "<a>Lack required information!</a> <a href='/%s'> Back to company page</a>" % (company_id)
+        myEmail = session['email']
+        if myEmail != email:
+            return "<a>Email Incorrect! Enter your login email!</a> <a href='/%s'> Back to company page</a>" % (company_id)
+        cursor = g.conn.execute('SELECT max(post_id) max_post_id From Added_Posts')
+        max_post_id = cursor.fetchone()['max_post_id']
+        post_id = max_post_id + 1
+        print(post_id)
+        cursor.close()
+        job_info = "Position: " + jobPosition+ "," + "Location: " +jobLocation
+        print(job_info)
+        try:
+            g.conn.execute("INSERT INTO Added_Posts (post_id, email, title, job_info) \
+                        VALUES ('{0}', '{1}', '{2}', '{3}')".format(post_id, email, title, job_info))
+            g.conn.execute("INSERT INTO Belong_1 (company_id, post_id) \
+                        VALUES ('{0}', '{1}')".format(company_id, post_id))
+            print("Add new post!")
+            return "<a>Add new post!</a><a href='/%s'> Back to company page</a>" % (company_id)
+            g.conn.commit()
+        except:
+            cursor = g.conn.execute("select * from Added_Posts")
+            for result in cursor:
+                print(result)
+            error = f"Email {email} is already registered, try again!"
+            print(error)
+            return "<a>Some errors, try again!!</a><a href='/%s'> Back to company page</a>" % (company_id)
+    return company(company_id)
 
 @app.route('/Posts')
 def posts():
@@ -272,7 +309,6 @@ if __name__ == "__main__":
     HOST, PORT = host, port
     print("running on %s:%d" % (HOST, PORT))
     app.run(host=HOST, port=PORT, debug=True, threaded=threaded)
-
 
   run()
 

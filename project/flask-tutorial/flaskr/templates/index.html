@@ -11,8 +11,8 @@
   <h1>Welcome to Work search process sharing platform!!!</h1>
   <h2>From here you can find differnet companies, click them and find more information!</h1>
 ---------------------------------------------------------------------- 
-    {% for n in data %}
-    <div><p><a href="/Company"> {{n}}</a></p></div>
+    {% for n in d %}
+    <div><p><a href="{{url_for('company', company_id = n)}}"> {{d[n]}}</a></p></div>
     {% endfor %}
 ----------------------------------------------------------------------
 <p><a href="{{url_for('login')}}"> Log in</a></p>
@@ -20,11 +20,6 @@
 <p><a href="{{url_for('register')}}"> Register here</a></p>
 
 <p><a href="{{url_for('profile')}}"> My profile</a></p>
-
-
-<!-- <form method="POST" action="/add">
-<p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
-</form> -->
 
 </body>
 
