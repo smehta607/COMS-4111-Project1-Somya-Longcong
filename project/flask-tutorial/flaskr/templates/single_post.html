@@ -9,6 +9,16 @@
         </style>
 
         <h1>{{name}}'s Post:</h1>
+        <div class="title">
+          <h4>Add new event?</h4>
+      </div>
+      <div id="content">
+          <form method="post" action="{{url_for('addevent', post_id = post_id)}}">
+              <label for="desc">Description of your event:</label>
+              <input type="string" name="desc" /><br />
+              <input type="submit" />
+          </form>
+        </div>
         {% for m in t %}
         <h2>{{m}}</h2>
         <div>
@@ -29,5 +39,12 @@
             {% endfor %}
           </div>
           {% endfor %}
+          <div id="content">
+            <form method="post" action="{{url_for('addcomment', post_id = post_id)}}">
+                <label for="desc">Add a new comment:</label>
+                <input type="string" name="cont" /><br />
+                <input type="submit" />
+            </form>
+          </div>
     </body>
 </html>

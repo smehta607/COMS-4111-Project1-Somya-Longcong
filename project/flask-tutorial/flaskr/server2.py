@@ -6,6 +6,7 @@ from sqlalchemy.pool import NullPool
 import flask
 import flask_login
 from flask import Flask, request, render_template, g, session, url_for, redirect, Response, flash, current_app
+import datetime
 
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -199,10 +200,20 @@ def follow():
 
 @app.route('/<int:company_id>', methods=['GET', 'POST'])
 def company(company_id):
-    cursor = g.conn.execute("select company_name from Company where company_id = %s", (company_id,))
+
+    cursor = g.conn.execute("select company_name from Company where company_id = %s", company_id)
+    companyName = ''
     for result in cursor:
         companyName = result['company_name']
-    return render_template("company.html", companyName = companyName, company_id = company_id)
+    
+    cursor = g.conn.execute("""select title, a.post_id from Added_Posts as a, belong_1 where 
+        a.post_id = Belong_1.post_id and
+        Belong_1.company_id =  %s""", company_id)
+    titles = []
+    for result in cursor:
+        titles.append((result['title'],result['post_id'])) 
+    context = dict(data = titles)
+    return render_template("company.html", **context, companyName = companyName, company_id = company_id)
 
 @app.route('/<int:company_id>/addpost', methods=['GET', 'POST'])
 def addpost(company_id):
@@ -257,10 +268,8 @@ def posts():
 
     return render_template("Posts.html", **context, name=name)
 
-@app.route('/<int:post_id>')
+@app.route('/Posts/<int:post_id>')
 def individual_post(post_id):
-    print(post_id)
-    name = session['name']
     cursor = g.conn.execute("""select title from Added_Posts
         where post_id = %s""", post_id) 
     titles = []
@@ -278,11 +287,71 @@ def individual_post(post_id):
         where post_id = %s""", post_id)
     for result in cursor:
         coms.append(result['content'])
+    
+    cursor = g.conn.execute("""select name from Users, Added_Posts
+        where post_id = %s and
+        Added_Posts.email = Users.email""", post_id)
+    name = ""
+    for result in cursor:
+        name = result['name']
     cursor.close()
 
 
     context = dict(data = desc, t = titles, c=coms)
-    return render_template("single_post.html", **context, name=name)
+    return render_template("single_post.html", **context, name=name, post_id= post_id)
+
+
+@app.route('/<int:post_id>/addevent', methods=['GET', 'POST'])
+def addevent(post_id):
+    if request.method == "POST":
+        pid = post_id
+        desc = request.form['desc']
+        timestamp = datetime.datetime.now()
+        print(timestamp)
+        if not pid or not desc:
+            return "<a>Lack required information!</a> <a href='/%s'> Back to Post page</a>" % (post_id)
+        
+        cursor = g.conn.execute('SELECT max(events_id) max_events_id From Belong_2_Events')
+        max_events_id = cursor.fetchone()['max_events_id']
+        events_id = max_events_id + 1
+        print(events_id)
+        cursor.close()
+        try:
+            g.conn.execute("INSERT INTO Belong_2_Events (events_id, post_id, description, timestamps) \
+                        VALUES ('{0}', '{1}', '{2}', '{3}')".format(events_id, post_id, desc, timestamp))
+            print("Added new event!")
+            return "<a>Added new event!</a><a href='/Posts/%s'> Back to post page</a>" % (post_id)
+            g.conn.commit()
+        except:
+            cursor = g.conn.execute("select * from Belong_2_Events")
+            for result in cursor:
+                print(result)
+            return "<a>Some errors, try again!!</a><a href='/Posts/%s'> Back to post page</a>" % (post_id)
+    return post(post_id)
+
+@app.route('/<int:post_id>/addcomment', methods=['GET', 'POST'])
+def addcomment(post_id):
+    if request.method == "POST":
+        pid = post_id
+        content = request.form['cont']
+        if not pid or not content:
+            return "<a>Lack required information!</a> <a href='/%s'> Back to Post page</a>" % (post_id)
+        
+        cursor = g.conn.execute('SELECT max(comment_id) max_comment_id From Comments_Attached')
+        max_comment_id = cursor.fetchone()['max_comment_id']
+        comment_id = max_comment_id + 1
+        print(comment_id)
+        cursor.close()
+        try:
+            g.conn.execute("INSERT INTO Comments_Attached (comment_id, content, post_id) \
+                        VALUES ('{0}', '{1}', '{2}')".format(comment_id, content, pid))
+            print("Added new comment!")
+            return "<a>Added a new comment!</a><a href='/Posts/%s'> Back to post page</a>" % (post_id)
+            g.conn.commit()
+        except:
+            cursor = g.conn.execute("select * from Comments_Attached")
+            return "<a>Some errors, try again!!</a><a href='/Posts/%s'> Back to post page</a>" % (post_id)
+    return post(post_id)
 if __name__ == "__main__":
   import click
 
