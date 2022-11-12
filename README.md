@@ -5,7 +5,7 @@ Application for work search process sharing
 
 Team member: Somya Mehta, Longcong Xu
 
-# clone repositories
+# Clone repositories
 
 ```
 git clone 'https://github.com/RicoXu727/COMS-4111-Project1-Somya-Longcong.git'
