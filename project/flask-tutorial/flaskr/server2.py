@@ -42,7 +42,7 @@ def teardown_request(exception):
   except Exception as e:
     pass
 
-@app.route('/index')
+@app.route('/')
 def index():
   """
   request is a special object that Flask provides to access web request information:
@@ -126,7 +126,7 @@ def profile():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.clear()
-    return "<a>Successfully Logout!</a><a href='/index'> Back to Home Page</a>"
+    return "<a>Successfully Logout!</a><a href='/'> Back to Home Page</a>"
 
 @app.route('/following', methods=['GET', 'POST'])
 def following():
@@ -294,16 +294,24 @@ def individual_post(post_id):
     name = ""
     for result in cursor:
         name = result['name']
+
+    
+    cursor = g.conn.execute("""select company_id from Belong_1 where post_id = %s""", post_id)
+    cid = ""
+    for result in cursor:
+        cid = result['company_id']
     cursor.close()
 
 
-    context = dict(data = desc, t = titles, c=coms)
+    context = dict(data = desc, t = titles, c=coms, cid = cid)
+
     return render_template("single_post.html", **context, name=name, post_id= post_id)
 
 
 @app.route('/<int:post_id>/addevent', methods=['GET', 'POST'])
 def addevent(post_id):
     if request.method == "POST":
+
         try:
             myEmail = session['email']
         except:
@@ -313,11 +321,13 @@ def addevent(post_id):
             post_email = result['email']
         if myEmail != post_email:
             return "<a>You can not add event in this post! You can only edit the post you created!</a> <a href='/Posts/%s'> Back to Post page</a>" % (post_id)
+
         pid = post_id
         desc = request.form['desc']
         timestamp = datetime.datetime.now()
         print(timestamp)
         if not pid or not desc:
+        
             return "<a>Lack required information!</a> <a href='/Posts/%s'> Back to Post page</a>" % (post_id)
         
         cursor = g.conn.execute('SELECT max(events_id) max_events_id From Belong_2_Events')
@@ -361,8 +371,7 @@ def addcomment(post_id):
             cursor = g.conn.execute("select * from Comments_Attached")
             return "<a>Some errors, try again!!</a><a href='/Posts/%s'> Back to post page</a>" % (post_id)
     return posts(post_id)
-
-
+    
 if __name__ == "__main__":
   import click
 
