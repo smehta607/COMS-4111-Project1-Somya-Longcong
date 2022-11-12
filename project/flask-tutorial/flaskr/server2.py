@@ -126,7 +126,7 @@ def profile():
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     session.clear()
-    return "<a>Successfully Logout!</a><a href='/index'> Back to Home Page</a>"
+    return "<a>Successfully Logout!</a><a href='/'> Back to Home Page</a>"
 
 @app.route('/following', methods=['GET', 'POST'])
 def following():
