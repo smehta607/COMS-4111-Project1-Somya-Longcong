@@ -294,10 +294,15 @@ def individual_post(post_id):
     name = ""
     for result in cursor:
         name = result['name']
+    
+    cursor = g.conn.execute("""select company_id from Belong_1 where post_id = %s""", post_id)
+    cid = ""
+    for result in cursor:
+        cid = result['company_id']
     cursor.close()
 
 
-    context = dict(data = desc, t = titles, c=coms)
+    context = dict(data = desc, t = titles, c=coms, cid = cid)
     return render_template("single_post.html", **context, name=name, post_id= post_id)
 
 
@@ -327,7 +332,7 @@ def addevent(post_id):
             for result in cursor:
                 print(result)
             return "<a>Some errors, try again!!</a><a href='/Posts/%s'> Back to post page</a>" % (post_id)
-    return post(post_id)
+    return posts(post_id)
 
 @app.route('/<int:post_id>/addcomment', methods=['GET', 'POST'])
 def addcomment(post_id):
@@ -351,7 +356,7 @@ def addcomment(post_id):
         except:
             cursor = g.conn.execute("select * from Comments_Attached")
             return "<a>Some errors, try again!!</a><a href='/Posts/%s'> Back to post page</a>" % (post_id)
-    return post(post_id)
+    return posts(post_id)
 if __name__ == "__main__":
   import click
 
