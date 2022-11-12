@@ -28,6 +28,15 @@
                 <input type="text" name="job_loc" /><br />
                 <input type="submit" />
             </form>
+        {% if data[0] != null %}
+        <h2>Or take a look at other posts for this company:</h2>
+        <div>
+            {% for n in data %}
+        <div>
+            <li><a href='/Posts/{{n[1]}}'>{{n[0]}}</a> </li>
+        </div>
+        {% endfor %}
+        {% endif %}
         </div>
         <p><a href='/index'>Home Page</a></li></p>
         <p></p><a href='/profile'>My profile</a></p>

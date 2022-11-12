@@ -9,11 +9,42 @@
         </style>
 
         <h1>{{name}}'s Post:</h1>
-        <h2>{{title}}</h2>
+        <div class="title">
+          <h4>Add new event?</h4>
+      </div>
+      <div id="content">
+          <form method="post" action="{{url_for('addevent', post_id = post_id)}}">
+              <label for="desc">Description of your event:</label>
+              <input type="string" name="desc" /><br />
+              <input type="submit" />
+          </form>
+        </div>
+        {% for m in t %}
+        <h2>{{m}}</h2>
         <div>
+          {% if data[0] != null %}
             {% for n in data %}
-            <div><li>{{n}}</li></div>
+            <div><li>{{n[1]}}: {{n[0]}}</li></div>
             {% endfor %}
+          {% else %}
+            <a>No Updates Yet!</a>
+          {% endif %}
+          </div>
+
+          <h3>Comments:
+          </h3>
+          <div>
+            {% for t in c %}
+            <div><li>{{t}}</li></div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+          <div id="content">
+            <form method="post" action="{{url_for('addcomment', post_id = post_id)}}">
+                <label for="desc">Add a new comment:</label>
+                <input type="string" name="cont" /><br />
+                <input type="submit" />
+            </form>
           </div>
     </body>
 </html>
