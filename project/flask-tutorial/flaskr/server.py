@@ -213,7 +213,7 @@ def company(company_id):
     for result in cursor:
         titles.append((result['title'],result['post_id'])) 
     context = dict(data = titles)
-    return render_template("company.html", **context, companyName = companyName, company_id = company_id)
+    return render_template("Company.html", **context, companyName = companyName, company_id = company_id)
 
 @app.route('/<int:company_id>/addpost', methods=['GET', 'POST'])
 def addpost(company_id):
