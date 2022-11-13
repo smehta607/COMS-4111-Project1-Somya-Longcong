@@ -224,7 +224,10 @@ def addpost(company_id):
         jobLocation = request.form['job_loc']
         if not email or not title or not jobPosition or not jobLocation:
             return "<a>Lack required information!</a> <a href='/%s'> Back to company page</a>" % (company_id)
-        myEmail = session['email']
+        try:
+            myEmail = session['email']
+        except:
+            return "<a>You must log in to post!!</a> <a href='/login'> Go to Login Page</a>" 
         if myEmail != email:
             return "<a>Email Incorrect! Enter your login email!</a> <a href='/%s'> Back to company page</a>" % (company_id)
         cursor = g.conn.execute('SELECT max(post_id) max_post_id From Added_Posts')
