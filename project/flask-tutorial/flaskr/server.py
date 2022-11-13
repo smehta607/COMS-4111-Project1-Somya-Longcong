@@ -142,7 +142,7 @@ def following():
         cursor = g.conn.execute("select * from Users where email = %s", (emails,))
         following.append(cursor.fetchone()[1])
         cursor.close()
-    return render_template("following.html", name=name, email = email, following = following)
+    return render_template("Following.html", name=name, email = email, following = following)
 
 @app.route('/follower', methods=['GET', 'POST'])
 def follower():
@@ -158,7 +158,7 @@ def follower():
         cursor = g.conn.execute("select * from Users where email = %s", (emails,))
         follower.append(cursor.fetchone()[1])
         cursor.close()
-    return render_template("follower.html", name=name, email = email, follower = follower)
+    return render_template("Follower.html", name=name, email = email, follower = follower)
 
 @app.route('/follow', methods = ['GET', 'POST'])
 def follow():
